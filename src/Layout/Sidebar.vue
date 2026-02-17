@@ -36,7 +36,6 @@ watch(
         <RouterLink v-if="user.role=='Admin'|| user.role=='Receptionniste'" class="menu" :to="{name:'Appointments'}">Gestion des rendez-vous</RouterLink>
         <RouterLink v-if="user.role=='Admin'|| user.role=='Receptionniste'" class="menu" :to="{name:'Rooms'}">Gestion des chambres</RouterLink>
         <RouterLink v-if="user.role=='Admin'" class="menu" :to="{name:'Users'}">Gestion des utilisateurs</RouterLink>
-
   </div>
 </template>
 
