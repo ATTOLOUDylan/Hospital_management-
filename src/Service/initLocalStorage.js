@@ -49,37 +49,7 @@ export function initLocalStorage() {
     localStorage.setItem('rooms', JSON.stringify(rooms))
   }
 
-  // ================= PATIENTS =================
-  if (!localStorage.getItem('patients')) {
-    const patients = [
-      {
-        id: 1,
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        gender: 'Homme',
-        phone: '97000001',
-        bloodGroup: 'O+',
-        status: 'hospitalisé',
-        doctorId: 1,
-        roomId: 2,
-        createdAt: '2026-02-10'
-      },
-      {
-        id: 2,
-        firstName: 'Marie',
-        lastName: 'Kouassi',
-        gender: 'Femme',
-        phone: '97000002',
-        bloodGroup: 'A+',
-        status: 'consultation',
-        doctorId: 2,
-        roomId: null,
-        createdAt: '2026-02-15'
-      }
-    ]
-    localStorage.setItem('patients', JSON.stringify(patients))
-  }
-
+  
   // ================= APPOINTMENTS =================
   if (!localStorage.getItem('appointments')) {
     const appointments = [

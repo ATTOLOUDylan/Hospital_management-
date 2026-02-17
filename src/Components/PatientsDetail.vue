@@ -98,17 +98,4 @@ onMounted(() => {
 </style>
 
 
-</script>
 
-
-<template>
-
-
-
-</template>
-
-
-<style scoped>
-
-
-</style>
