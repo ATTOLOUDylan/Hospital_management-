@@ -6,6 +6,8 @@ import Home from '@/Views/Home.vue'
 import Patients from '@/Views/Patients.vue'
 import Rooms from '@/Views/Rooms.vue'
 import Users from '@/Views/Users.vue'
+import PatientsDetail from '@/Components/PatientsDetail.vue'
+import PatientsForm from '@/Components/PatientsForm.vue'
 
  const routes =[
     {
@@ -36,6 +38,18 @@ import Users from '@/Views/Users.vue'
     path: "/patients",
     name: "Patients",
     component: Patients,
+
+  },
+    {
+    path: "/patients/:id",
+    name: "Patients-details",
+    component: PatientsDetail,
+
+  },
+    {
+    path: "/patients-form/:id?",
+    name: "PatientsForm",
+    component: PatientsForm,
 
   },
     {
