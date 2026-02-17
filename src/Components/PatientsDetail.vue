@@ -96,3 +96,19 @@ onMounted(() => {
   color: #1e8e6e;
 }
 </style>
+
+
+</script>
+
+
+<template>
+
+
+
+</template>
+
+
+<style scoped>
+
+
+</style>
