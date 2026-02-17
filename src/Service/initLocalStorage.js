@@ -31,23 +31,7 @@ export function initLocalStorage() {
   
 
   // ================= ROOMS =================
-  if (!localStorage.getItem('rooms')) {
-    const rooms = [
-      {
-        id: 1,
-        number: 'A101',
-        capacity: 2,
-        status: 'libre'
-      },
-      {
-        id: 2,
-        number: 'B202',
-        capacity: 1,
-        status: 'occupée'
-      }
-    ]
-    localStorage.setItem('rooms', JSON.stringify(rooms))
-  }
+  
 
   
   // ================= APPOINTMENTS =================

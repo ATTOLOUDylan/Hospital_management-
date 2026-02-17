@@ -1,10 +1,12 @@
 <script setup>
 import AdminDashboard from './AdminDashboard.vue';
+import ReceptionHome from './ReceptionHome.vue';
 </script>
 
 <template>
     <div class="width">
-        <AdminDashboard/>
+        <!-- <AdminDashboard/> -->
+        <ReceptionHome/>
     </div>
 </template>
 
