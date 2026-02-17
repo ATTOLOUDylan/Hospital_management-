@@ -8,11 +8,19 @@ import { RouterView } from 'vue-router';
 <template>
 <div>
   <div><Navbar/></div>
-  <div><Sidebar/></div>
+<div id="vue">
+    <div>
+    <Sidebar/>
+  </div>
   <div>
     <RouterView/>
   </div>
 </div>
+</div>
 </template>
 
-<style scoped></style>
+<style scoped>
+#vue{
+  display: flex;
+}
+</style>
