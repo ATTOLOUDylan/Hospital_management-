@@ -1,23 +1,26 @@
 <script setup>
-import Navbar from "./Layout/Navbar.vue";
-import Sidebar from "./Layout/Sidebar.vue";
-import { RouterView } from "vue-router";
+import Navbar from './Layout/Navbar.vue';
+import Sidebar from './Layout/Sidebar.vue';
+import { RouterView } from 'vue-router';
+
 </script>
 
 <template>
-  <div>
+<div>
+  <div><Navbar/></div>
+<div id="vue">
     <div>
-      <Navbar />
-    </div>
-    <div id="vue">
-      <Sidebar />
-      <RouterView />
-    </div>
+    <Sidebar/>
   </div>
+  <div>
+    <RouterView/>
+  </div>
+</div>
+</div>
 </template>
 
 <style scoped>
-#vue {
+#vue{
   display: flex;
 }
 </style>

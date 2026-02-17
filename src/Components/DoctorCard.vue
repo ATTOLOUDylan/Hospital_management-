@@ -2,18 +2,18 @@
 const props = defineProps({
   doctor: {
     type: Object,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
-const emit = defineEmits(["edit", "delete"])
+const emit = defineEmits(["edit", "delete"]);
 
 function handleEdit() {
-  emit("edit", props.doctor)
+  emit("edit", props.doctor);
 }
 
 function handleDelete() {
-  emit("delete", props.doctor.id)
+  emit("delete", props.doctor.id);
 }
 </script>
 
@@ -39,16 +39,17 @@ function handleDelete() {
   </div>
 </template>
 
-
 <style scoped>
 .doctor-card {
+  margin-left: 200px;
+  margin-top: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: white;
   padding: 1rem 1.5rem;
   border-radius: 12px;
-  border-left: 5px solid #1E8E6E;
+  border-left: 5px solid #1e8e6e;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: 0.2s ease;
   margin-bottom: 1rem;
@@ -66,14 +67,14 @@ function handleDelete() {
 }
 
 .doctor-info h3 {
-  color: #1F2937;
+  color: #1f2937;
   font-size: 1rem;
   font-weight: 600;
   min-width: 150px;
 }
 
 .doctor-info p {
-  color: #4B5563;
+  color: #4b5563;
   font-size: 0.9rem;
   min-width: 120px;
 }
@@ -87,12 +88,12 @@ function handleDelete() {
 }
 
 .available {
-  background: #E6F4F1;
-  color: #1E8E6E;
+  background: #e6f4f1;
+  color: #1e8e6e;
 }
 
 .unavailable {
-  background: #FDE2E2;
+  background: #fde2e2;
   color: #dc3545;
 }
 
@@ -111,12 +112,12 @@ function handleDelete() {
 }
 
 button.edit {
-  background: #1E8E6E;
+  background: #1e8e6e;
   color: white;
 }
 
 button.edit:hover {
-  background: #166F56;
+  background: #166f56;
 }
 
 button.delete {
@@ -127,5 +128,4 @@ button.delete {
 button.delete:hover {
   background: #e5e7eb;
 }
-
 </style>
