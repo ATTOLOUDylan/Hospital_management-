@@ -43,6 +43,7 @@ function handleDelete() {
 .doctor-card {
   margin-left: 200px;
   margin-top: 50px;
+  width: 50%;
   display: flex;
   align-items: center;
   justify-content: space-between;
