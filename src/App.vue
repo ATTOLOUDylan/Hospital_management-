@@ -1,11 +1,32 @@
-<script setup></script>
+<script setup>
+import Navbar from './Layout/Navbar.vue';
+import Sidebar from './Layout/Sidebar.vue';
+import { RouterView } from 'vue-router';
+
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+<div>
+<div><Navbar/></div>
+<div class="layout">
+    <Sidebar/>
+  <div class=" content ">
+    <RouterView/>
+  </div>
+</div>
+</div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;              /* prend tout l’espace restant */
+  background: #f8f9fa;
+  padding: 24px;
+
+}
+</style>
