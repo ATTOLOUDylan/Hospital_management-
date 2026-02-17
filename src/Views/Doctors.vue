@@ -12,7 +12,7 @@ const doctors = ref([
     available: "Disponible",
   },
   {
-    id: 1,
+    id: 2,
     name: "Dr TOSSA",
     speciality: "Pédiatrie",
     phone: "0152623927",
@@ -26,6 +26,8 @@ onMounted(() => {
   const saved = localStorage.getItem("doctors");
   if (saved) {
     doctors.value = JSON.parse(saved);
+  } else {
+    localStorage.setItem("doctors", JSON.stringify(doctors.value));
   }
 });
 

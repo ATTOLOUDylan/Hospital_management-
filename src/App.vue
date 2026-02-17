@@ -6,17 +6,11 @@ import { RouterView } from "vue-router";
 
 <template>
 <div>
-  <div><Navbar/></div>
-<div id="vue">
-    <div>
+<div><Navbar/></div>
+<div class="layout">
     <Sidebar/>
-  </div>
-  <div>
-    <div><Navbar /></div>
-    <div id="vue">
-      <Sidebar />
-      <RouterView />
-    </div>
+  <div class=" content ">
+    <RouterView/>
   </div>
 </template>
 
@@ -27,7 +21,15 @@ import { RouterView } from "vue-router";
 </template>
 
 <style scoped>
-#vue{
+.layout {
   display: flex;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;              /* prend tout l’espace restant */
+  background: #f8f9fa;
+  padding: 24px;
+
 }
 </style>

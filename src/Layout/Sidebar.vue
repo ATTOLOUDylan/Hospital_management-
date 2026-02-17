@@ -30,7 +30,6 @@ watch(
 
   <div class="side" v-if="!$route.meta.hideNav && user">
     <h1>Dashboard</h1>
-        
         <RouterLink  class="menu" :to="{name:'Home' }">Home</RouterLink>
         <RouterLink v-if="user.role=='Admin'" class="menu" :to="{name:'Doctors'}">Gestion des médecins </RouterLink>
         <RouterLink v-if="user.role=='Admin'|| user.role=='Receptionniste'" class="menu" :to="{name:'Patients'}">Gestion des patients</RouterLink>
