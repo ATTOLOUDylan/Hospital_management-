@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref, watch } from "vue";
 
 const props = defineProps({
@@ -13,25 +14,34 @@ const form = ref({
   phone: "",
   speciality: "",
   available: true,
-  gender: ""
-})
+  gender: "",
+  password: "",
+  role: "doctor"
+});
 
 watch(
   () => props.doctor,
   (newVal) => {
     if (newVal) {
-      form.value = { ...newVal };
+      form.value = {
+        ...newVal,
+        role: "doctor",
+        password: ""
+      };
     } else {
       form.value = {
         id: null,
         name: "",
-        speciality: "",
         phone: "",
+        speciality: "",
         available: true,
+        gender: "",
+        password: "",
+        role: "doctor"
       };
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 function submit() {
@@ -56,6 +66,18 @@ function submit() {
           <option value="Chirurgie">Chirurgie</option>
           <option value="Biologiste">Biologiste</option>
         </select>
+
+        <input
+          v-model="form.password"
+          type="password"
+          placeholder="Mot de passe"
+          :required="!doctor"
+        />
+
+        <input
+          v-model="form.role"
+          disabled
+        />
 
         <div class="checkbox-group">
           <label>
@@ -137,6 +159,11 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(30, 142, 110, 0.15);
 }
 
+input:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
 .checkbox-group,
 .radio-group {
   display: flex;
@@ -189,5 +216,4 @@ button[type="button"]:hover {
     transform: translateY(0);
   }
 }
-
 </style>
