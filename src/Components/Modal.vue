@@ -1,8 +1,24 @@
+<!-- Modal.vue -->
 <template>
-  <div class="modal-backdrop" @click.self="close">
-    <div class="modal-content">
-      <slot></slot>
-      <button class="close-btn" @click="close">X</button>
+  <div 
+    class="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+    @click.self="close"
+  >
+    <div class="relative w-full max-w-lg bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-slate-900/20 transform transition-all border border-slate-100">
+      
+      <button 
+        @click="close"
+        class="absolute top-6 right-6 p-2 rounded-full bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all group"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="mt-2">
+        <slot></slot>
+      </div>
+
     </div>
   </div>
 </template>
@@ -14,31 +30,3 @@ function close() {
   emit("close");
 }
 </script>
-
-<style scoped>
-.modal-backdrop {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 1000;
-}
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: 400px;
-  position: relative;
-}
-.close-btn {
-  position: absolute;
-  top: 10px; right: 10px;
-  background: #e76f51;
-  border: none;
-  color: white;
-  border-radius: 50%;
-  width: 28px; height: 28px;
-  cursor: pointer;
-}
-</style>

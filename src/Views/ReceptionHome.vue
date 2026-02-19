@@ -12,12 +12,7 @@ function initLocalStorage() {
   if (!localStorage.getItem("rooms")) {
     localStorage.setItem(
       "rooms",
-      JSON.stringify([
-        { id: 1, numero: "E-42", status: "Libre" },
-        { id: 2, numero: "E-43", status: "Occupée" },
-        { id: 3, numero: "E-46", status: "Occupée" },
-        { id: 4, numero: "E-32", status: "Occupée" }
-      ])
+      JSON.stringify(JSON.stringify([]))
     )
   }
 }

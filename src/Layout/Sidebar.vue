@@ -1,130 +1,200 @@
 <script setup>
-import { ref, onMounted , watch} from 'vue';
-import { useRouter ,useRoute} from 'vue-router';
-import { authService } from '@/Service/authServices';
-const router = useRouter();
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
 const route = useRoute();
 const user = ref(null);
 
+// 1. Fonction réutilisable pour récupérer l'user
+const loadUser = () => {
+  const storedUser = localStorage.getItem("currentUser");
+  if (storedUser) {
+    user.value = JSON.parse(storedUser);
+    console.log("User chargé :", user.value.Name);
+  }
+};
 
+// 2. Charger dès que le composant est créé (immédiat pour éviter le bug d'affichage après login)
+loadUser();
 
+// 3. Charger au montage
 onMounted(() => {
-  // Récupération de l'objet stocké au login
-
+  loadUser();
 });
+
+// 4. Surveiller les changements de route
 watch(
   () => route.path,
-  (newValue, oldValue) => {
-     const storedUser = localStorage.getItem("currentUser");
-  if (storedUser) {
-    user.value = JSON.parse(storedUser); 
-    console.log("user monté");
-    
+  () => {
+    loadUser();
   }
-  }
-)
-
+);
 </script>
 
 <template>
+  <aside
+    class="fixed left-0 top-0 h-screen w-72 bg-gray-50 border-r border-gray-200 z-40 flex flex-col transition-all duration-300"
+    v-if="!$route.meta.hideNav && user"
+  >
+    <div class="p-8 mb-4">
+      <div class="flex items-center gap-3 group cursor-pointer">
+        <div class="w-10 h-10 bg-[#1E8E6E] rounded-xl flex items-center justify-center shadow-lg shadow-[#1E8E6E]/30 group-hover:rotate-6 transition-transform">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold text-gray-800 tracking-tight">Harmony<span class="text-[#1E8E6E]">Hub</span></h1>
+      </div>
+    </div>
 
-  <div class="side" v-if="!$route.meta.hideNav && user">
-    <h1>Dashboard</h1>
-        <RouterLink  class="menu" :to="{name:'Home' }">Home</RouterLink>
-        <RouterLink v-if="user.role=='Admin'" class="menu" :to="{name:'Doctors'}">Gestion des médecins </RouterLink>
-        <RouterLink v-if="user.role=='Admin'|| user.role=='Receptionniste'" class="menu" :to="{name:'Patients'}">Gestion des patients</RouterLink>
-        <RouterLink v-if="user.role=='Admin'|| user.role=='Receptionniste'" class="menu" :to="{name:'Appointments'}">Gestion des rendez-vous</RouterLink>
-        <RouterLink v-if="user.role=='Admin'|| user.role=='Receptionniste'" class="menu" :to="{name:'Rooms'}">Gestion des chambres</RouterLink>
-        <RouterLink v-if="user.role=='Admin'" class="menu" :to="{name:'Users'}">Gestion des utilisateurs</RouterLink>
-  </div>
+    <nav class="flex-1 px-4 space-y-4 overflow-y-auto custom-scrollbar">
+
+      <RouterLink
+        :to="{ name: 'Home' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive 
+            ? 'bg-white shadow-md text-[#1E8E6E] font-bold' 
+            : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="[
+            'p-2 rounded-lg transition-all duration-300',
+            isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]'
+          ]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M3 12l9-9 9 9M4 10v10a1 1 0 001 1h5m4 0h5a1 1 0 001-1V10" />
+            </svg>
+          </div>
+          <span>Tableau de bord</span>
+        </div>
+      </RouterLink>
+
+      <RouterLink
+        v-if="user.role=='Admin'"
+        :to="{ name: 'Doctors' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive ? 'bg-white shadow-md text-[#1E8E6E] font-bold' : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="['p-2 rounded-lg transition-all duration-300', isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]']">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <span>Gestion des médecins</span>
+        </div>
+      </RouterLink>
+
+      <RouterLink
+        v-if="user.role=='Admin'|| user.role=='Receptionniste'"
+        :to="{ name: 'Patients' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive ? 'bg-white shadow-md text-[#1E8E6E] font-bold' : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="['p-2 rounded-lg transition-all duration-300', isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]']">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <span>Gestion des patients</span>
+        </div>
+      </RouterLink>
+      <RouterLink
+        v-if="user.role=='doctor'"
+        :to="{ name: 'Patients' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive ? 'bg-white shadow-md text-[#1E8E6E] font-bold' : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="['p-2 rounded-lg transition-all duration-300', isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]']">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <span>Mes patients</span>
+        </div>
+      </RouterLink>
+
+      <RouterLink
+        v-if="user.role=='Admin'|| user.role=='Receptionniste'"
+        :to="{ name: 'Appointments' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive ? 'bg-white shadow-md text-[#1E8E6E] font-bold' : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="['p-2 rounded-lg transition-all duration-300', isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]']">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span>Rendez-vous</span>
+        </div>
+      </RouterLink>
+      <RouterLink
+        v-if="user.role=='doctor'"
+        :to="{ name: 'Appointments' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive ? 'bg-white shadow-md text-[#1E8E6E] font-bold' : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="['p-2 rounded-lg transition-all duration-300', isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]']">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span>Mes Rendez-vous</span>
+        </div>
+      </RouterLink>
+
+      <RouterLink
+        v-if="user.role=='Admin'|| user.role=='Receptionniste'"
+        :to="{ name: 'Rooms' }"
+        v-slot="{ isActive }"
+      >
+        <div :class="[
+          'flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group',
+          isActive ? 'bg-white shadow-md text-[#1E8E6E] font-bold' : 'text-gray-500 hover:text-[#1E8E6E] hover:bg-[#1E8E6E]/5 hover:translate-x-1'
+        ]">
+          <div :class="['p-2 rounded-lg transition-all duration-300', isActive ? 'bg-[#1E8E6E] text-white shadow-md' : 'bg-gray-100 text-gray-400 group-hover:bg-[#1E8E6E]/10 group-hover:text-[#1E8E6E]']">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <span>Gestion des chambres</span>
+        </div>
+      </RouterLink>
+
+    </nav>
+
+    <div class="p-4 border-t border-gray-100 bg-white">
+      <div class="flex items-center gap-3 p-2 rounded-xl bg-gray-50 border border-gray-100">
+         <div class="w-8 h-8 rounded-full bg-[#1E8E6E] flex items-center justify-center text-white text-xs font-bold shrink-0">
+           {{ user.Name.charAt(0) }}
+         </div>
+         <div class="flex flex-col min-w-0">
+           <span class="text-xs font-bold text-gray-700 truncate uppercase tracking-tight">{{ user.Name }}</span>
+           <span class="text-[10px] text-[#1E8E6E] font-bold uppercase tracking-widest">{{ user.role }}</span>
+         </div>
+      </div>
+    </div>
+  </aside>
 </template>
 
 <style scoped>
-/* ================================
-   VARIABLES GLOBALES
-================================ */
-:global(:root) {
-  --green-primary: #1E8E6E;
-  --green-light: #E8F5F0;
-  --blue-medical: #1C6ED5;
-  --white: #ffffff;
-  --gray-text: #5F6F73;
-  --gray-border: #e4eaea;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0px;
 }
-
-/* ================================
-   SIDEBAR
-================================ */
-.side {
-  display: flex;
-  flex-direction: column;
-  width: 280px;
-  min-height: 100vh;
-  padding: 24px 16px;
-  gap: 12px;
-
-  background-color: var(--white);
-  border-right: 1px solid var(--gray-border);
-}
-
-/* Titre */
-.side h1 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--green-primary);
-  margin-bottom: 20px;
-}
-
-/* ================================
-   MENU
-================================ */
-.menu {
-  padding: 12px 16px;
-  border-radius: 8px;
-  text-decoration: none;
-
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--gray-text);
-
-  background-color: transparent;
-  transition: all 0.25s ease;
-}
-
-/* Hover */
-.menu:hover {
-  background-color: var(--green-light);
-}
-
-/* Lien actif */
-.router-link-active {
-  background: linear-gradient(
-    135deg,
-    var(--green-primary)
-  );
-  color: var(--white);
-  font-weight: 600;
-}
-
-/* ================================
-   RESPONSIVE
-================================ */
-@media (max-width: 900px) {
-  .side {
-    width: 100%;
-    min-height: auto;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-  }
-
-  .side h1 {
-    display: none;
-  }
-
-  .menu {
-    white-space: nowrap;
-  }
-}
-
 </style>
