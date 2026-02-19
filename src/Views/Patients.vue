@@ -109,6 +109,7 @@ function executeDelete() {
           <option value="">Tous les statuts</option>
           <option value="stable">Statut : Stable</option>
           <option value="critique">Statut : Critique</option>
+          <option value="hospialisé">Statut : Hospitalisé</option>
         </select>
       </div>
 

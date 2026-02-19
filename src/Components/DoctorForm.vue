@@ -15,7 +15,6 @@ const form = ref({
   speciality: "",
   available: true,
   gender: "",
-  password: "",
   role: "doctor"
 });
 
@@ -26,7 +25,6 @@ watch(
       form.value = {
         ...newVal,
         role: "doctor",
-        password: ""
       };
     } else {
       form.value = {
@@ -36,7 +34,6 @@ watch(
         speciality: "",
         available: true,
         gender: "",
-        password: "",
         role: "doctor"
       };
     }
@@ -66,13 +63,6 @@ function submit() {
           <option value="Chirurgie">Chirurgie</option>
           <option value="Biologiste">Biologiste</option>
         </select>
-
-        <input
-          v-model="form.password"
-          type="password"
-          placeholder="Mot de passe"
-          :required="!doctor"
-        />
 
         <input
           v-model="form.role"
