@@ -106,7 +106,7 @@ const fullRooms = computed(() =>
           <tr v-for="p in lastPatients" :key="p.id">
             <td>{{ p.firstName }} {{ p.lastName }}</td>
             <td>{{doctors.find(d => d.id === p.doctorId)?.name || '—'}}</td>
-            <td>{{ p.roomId || '—' }}</td>
+            <td>{{ p.roomName || '—' }}</td>
             <td>{{ p.createdAt }}</td>
           </tr>
         </tbody>
