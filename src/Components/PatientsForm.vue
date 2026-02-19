@@ -1,5 +1,3 @@
-
-<!-- PatientForm -->
 <script setup>
 import { computed, reactive, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
@@ -7,24 +5,22 @@ import { useRouter, useRoute } from "vue-router";
 const router = useRouter();
 const route = useRoute();
 
-// Détermine si on est en mode édition
 const isEditing = computed(() => !!route.params.id);
 
-// 1. OBJET PATIENT COMPLÉTÉ (Tous les nouveaux champs sont ici)
+// 1. OBJET PATIENT SYNCHRONISÉ AVEC PATIENTDETAIL
 const patient = reactive({
   id: null,
   firstName: "",
   lastName: "",
   gender: "masculin",
-  bloodGroup: "",
-  status: "",
+  bloodGroup: "",       // Requis pour les détails
+  status: "stable",     // Requis pour les détails (stable/critique)
   phone: "",
   doctorId: null,
   doctorName: "",
   roomId: null,
   roomName: "",
-  // --- Nouveaux champs ajoutés ---
-  familyStatus: "",
+  familyStatus: "célibataire",
   profession: "",
   guardianName: "",
   emergencyContact: "",
@@ -32,7 +28,7 @@ const patient = reactive({
   familyHistory: "",
   personalHistory: "",
   currentTreatments: "",
-  consultationReason: "",
+  consultationReason: "", // Requis pour les détails
   symptoms: "",
   diagnosis: "",
   testResults: "",
@@ -40,11 +36,9 @@ const patient = reactive({
   consentSigned: false,
 });
 
-// Données auxiliaires
 const doctors = reactive([]);
 const rooms = reactive([]);
 
-// Charger médecins, chambres et patient à éditer
 onMounted(() => {
   const savedDoctors = localStorage.getItem("doctors");
   doctors.push(...(savedDoctors ? JSON.parse(savedDoctors) : []));
@@ -56,35 +50,24 @@ onMounted(() => {
     const savedPatients = JSON.parse(localStorage.getItem("patients") || "[]");
     const existing = savedPatients.find(p => p.id === Number(route.params.id));
     if (existing) {
-      // Object.assign recopie toutes les propriétés existantes dans l'objet réactif
       Object.assign(patient, existing);
     }
   }
 });
 
-// 🔹 Watch : mettre à jour doctorName
-watch(
-  () => patient.doctorId,
-  (newId) => {
-    const selectedDoctor = doctors.find(d => d.id === Number(newId));
-    patient.doctorName = selectedDoctor ? selectedDoctor.name : "";
-  }
-);
+watch(() => patient.doctorId, (newId) => {
+  const selectedDoctor = doctors.find(d => d.id === Number(newId));
+  patient.doctorName = selectedDoctor ? selectedDoctor.name : "";
+});
 
-// 🔹 Watch : mettre à jour roomName
-watch(
-  () => patient.roomId,
-  (newId) => {
-    const selectedRoom = rooms.find(r => r.id === Number(newId));
-    patient.roomName = selectedRoom ? selectedRoom.numero : "";
-  }
-);
+watch(() => patient.roomId, (newId) => {
+  const selectedRoom = rooms.find(r => r.id === Number(newId));
+  patient.roomName = selectedRoom ? selectedRoom.numero : "";
+});
 
-// 2. SAUVEGARDE (Inclusion automatique de tous les champs réactifs)
 function savePatient() {
   const savedPatients = JSON.parse(localStorage.getItem("patients") || "[]");
 
-  // On s'assure que les noms sont synchronisés avant de sauvegarder
   const selectedDoctor = doctors.find(d => d.id === Number(patient.doctorId));
   patient.doctorName = selectedDoctor ? selectedDoctor.name : null;
 
@@ -94,11 +77,9 @@ function savePatient() {
   if (isEditing.value) {
     const index = savedPatients.findIndex(p => p.id === patient.id);
     if (index !== -1) {
-      // Sauvegarde de l'objet patient complet (incluant les nouveaux champs)
       savedPatients[index] = { ...patient };
     }
   } else {
-    // Création d'un nouveau patient
     savedPatients.push({
       ...patient,
       id: Date.now(),
@@ -107,8 +88,6 @@ function savePatient() {
   }
 
   localStorage.setItem("patients", JSON.stringify(savedPatients));
-  
-  // Redirection vers la liste
   router.push({ name: "Patients" });
 }
 </script>
@@ -150,44 +129,19 @@ function savePatient() {
             <input v-model="patient.firstName" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" required />
           </div>
           <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Profession</label>
-            <input v-model="patient.profession" type="text" placeholder="Ex: Enseignant" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" />
+            <input v-model="patient.profession" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" />
           </div>
-          <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Situation Familiale</label>
-            <select v-model="patient.familyStatus" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none">
-              <option value="célibataire">Célibataire</option>
-              <option value="marié">Marié(e)</option>
-              <option value="divorcé">Divorcé(e)</option>
-              <option value="veuf">Veuf/Veuve</option>
+          <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Groupe Sanguin</label>
+            <select v-model="patient.bloodGroup" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none">
+              <option value="">Inconnu</option>
+              <option v-for="group in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']" :key="group" :value="group">{{ group }}</option>
             </select>
-          </div>
-          <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Tuteur légal (mineur)</label>
-            <input v-model="patient.guardianName" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" />
           </div>
           <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Contact d'urgence (Nom & Tel)</label>
             <input v-model="patient.emergencyContact" type="text" placeholder="Obligatoire" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" required />
           </div>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-        <div class="flex items-center gap-3 mb-6 border-b border-gray-50 pb-4">
-          <div class="p-2 bg-orange-100 rounded-lg text-orange-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-          </div>
-          <h2 class="text-lg font-bold text-gray-800">Antécédents & Mode de vie</h2>
-        </div>
-
-        <div class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Habitudes (Tabac, Alcool, Sport)</label>
-              <textarea v-model="patient.lifestyle" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none"></textarea>
-            </div>
-            <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Antécédents Familiaux</label>
-              <textarea v-model="patient.familyHistory" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none" placeholder="Diabète, HTA..."></textarea>
-            </div>
-          </div>
-          <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Traitements actuels</label>
-            <textarea v-model="patient.currentTreatments" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none"></textarea>
+          <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Téléphone</label>
+            <input v-model="patient.phone" type="text" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" />
           </div>
         </div>
       </div>
@@ -197,16 +151,20 @@ function savePatient() {
           <div class="p-2 bg-red-100 rounded-lg text-red-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
           </div>
-          <h2 class="text-lg font-bold text-gray-800">Informations Cliniques</h2>
+          <h2 class="text-lg font-bold text-gray-800">Informations Cliniques & Motif</h2>
         </div>
 
         <div class="space-y-6">
+          <div class="space-y-2">
+            <label class="text-xs font-black uppercase text-gray-400">Motif de consultation</label>
+            <textarea v-model="patient.consultationReason" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none italic" placeholder="Ex: Douleurs abdominales..."></textarea>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Symptômes rapportés</label>
-              <textarea v-model="patient.symptoms" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none"></textarea>
+            <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Antécédents Personnels</label>
+              <textarea v-model="patient.personalHistory" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none"></textarea>
             </div>
-            <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Résultats d'examens (Labo, Imagerie)</label>
-              <textarea v-model="patient.testResults" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none"></textarea>
+            <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Traitements actuels</label>
+              <textarea v-model="patient.currentTreatments" rows="2" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none resize-none"></textarea>
             </div>
           </div>
           <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Diagnostic Médical</label>
@@ -220,16 +178,34 @@ function savePatient() {
           <div class="p-2 bg-blue-100 rounded-lg text-blue-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </div>
-          <h2 class="text-lg font-bold text-gray-800">Administration & Suivi</h2>
+          <h2 class="text-lg font-bold text-gray-800">Assignation & Administration</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-2"><label class="text-xs font-black uppercase text-gray-400">Assurance / Mutuelle</label>
-            <input v-model="patient.insurance" type="text" placeholder="Nom de l'assurance" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white outline-none" />
+          <div class="space-y-2">
+            <label class="text-xs font-black uppercase text-gray-400">Médecin Traitant</label>
+            <select v-model="patient.doctorId" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none" required>
+              <option :value="null" disabled>Choisir un médecin</option>
+              <option v-for="doc in doctors" :key="doc.id" :value="doc.id">Dr. {{ doc.name }}</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-black uppercase text-gray-400">Chambre</label>
+            <select v-model="patient.roomId" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none">
+              <option :value="null">Sans chambre</option>
+              <option v-for="room in rooms" :key="room.id" :value="room.id">N° {{ room.numero }}</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-black uppercase text-gray-400">Statut du patient</label>
+            <select v-model="patient.status" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none">
+              <option value="stable">Stable</option>
+              <option value="critique">Critique</option>
+            </select>
           </div>
           <div class="flex items-center gap-4 mt-8">
             <input v-model="patient.consentSigned" type="checkbox" id="consent" class="w-5 h-5 accent-[#1E8E6E]" />
-            <label for="consent" class="text-sm font-bold text-gray-700">Consentement aux soins signé</label>
+            <label for="consent" class="text-sm font-bold text-gray-700">Consentement signé</label>
           </div>
         </div>
       </div>
@@ -243,5 +219,3 @@ function savePatient() {
     </form>
   </div>
 </template>
-
- 
