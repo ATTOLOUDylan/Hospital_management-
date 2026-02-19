@@ -19,7 +19,7 @@ const myPatients = computed(() =>
 )
 
 const hospitalizedPatients = computed(() =>
-  myPatients.value.filter(p => p.status === "Hospitalisé")
+  myPatients.value.filter(p => p.status === "hospitalisé")
 )
 
 const today = new Date().toISOString().split("T")[0]
