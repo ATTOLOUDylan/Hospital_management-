@@ -95,7 +95,7 @@ router.beforeEach((to, from, next) => {
         alert("Accès refusé : Réservé aux administrateurs");
         next({ name: "Home" });
       } else {
-        next(); // Tout est OK
+        next();
       }
     }
   }
