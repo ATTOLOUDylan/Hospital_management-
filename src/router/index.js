@@ -8,6 +8,7 @@ import Rooms from '@/Views/Rooms.vue'
 import Users from '@/Views/Users.vue'
 import PatientsDetail from '@/Components/PatientsDetail.vue'
 import PatientsForm from '@/Components/PatientsForm.vue'
+import Plaintes from '@/Views/Plaintes.vue'
 
  const routes =[
     {
@@ -62,6 +63,12 @@ import PatientsForm from '@/Components/PatientsForm.vue'
     path: "/users",
     name: "Users",
     component: Users,
+
+  },
+    {
+    path: "/plainte",
+    name: "Plainte",
+    component: Plaintes,
 
   },
  ]

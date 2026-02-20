@@ -1,22 +1,40 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted , computed } from "vue";
 import DoctorForm from "@/Components/DoctorForm.vue";
 import DoctorCard from "@/Components/DoctorCard.vue";
-import Modal from "@/Components/Modal.vue"; // Assure-toi que l'import est là
+import Modal from "@/Components/Modal.vue"; 
 import { authService } from "@/Service/authServices";
 
 const doctors = ref([]);
-const showModal = ref(false); // Modal du formulaire
-const showDeleteModal = ref(false); // Modal de confirmation
+const showModal = ref(false); 
+const showDeleteModal = ref(false); 
 const editingDoctor = ref(null);
 const doctorToDelete = ref(null);
+const searchQuery = ref("");
+const specialityFilter = ref("Toutes");
+
+// Récupérer la liste unique des spécialités pour le menu déroulant
+const uniqueSpecialities = computed(() => {
+  const specs = doctors.value.map(d => d.speciality);
+  return ["Toutes", ...new Set(specs)];
+});
+
+// La liste filtrée qui sera utilisée dans le v-for
+const filteredDoctors = computed(() => {
+  return doctors.value.filter((doctor) => {
+    const name = doctor.name || "";
+    const spec = doctor.speciality || "";
+    const matchesName = name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    const matchesSpec = specialityFilter.value === "Toutes" || spec === specialityFilter.value;
+    return matchesName && matchesSpec;
+  });
+});
 
 onMounted(() => {
   const saved = localStorage.getItem("doctors");
   if (saved) {
     doctors.value = JSON.parse(saved);
   } else {
-    // Liste initiale si vide
     doctors.value = [
        { id: 1, name: "Jean Dupont", speciality: "Cardiologue", phone: "0102030405", available: true },
     ];
@@ -28,7 +46,6 @@ function saveToLocalStorage() {
   localStorage.setItem("doctors", JSON.stringify(doctors.value));
 }
 
-// --- LOGIQUE DU FORMULAIRE (AJOUT/EDIT) ---
 function openAddModal() {
   editingDoctor.value = null;
   showModal.value = true;
@@ -64,7 +81,6 @@ function saveDoctor(doctorData) {
   showModal.value = false;
 }
 
-// --- LOGIQUE DE SUPPRESSION AVEC CONFIRMATION ---
 function confirmDelete(doctor) {
   doctorToDelete.value = doctor;
   showDeleteModal.value = true;
@@ -102,9 +118,35 @@ function closeDeleteModal() {
         </button>
       </div>
 
-      <div v-if="doctors.length > 0" class="grid grid-cols-1 gap-2">
+    <div class="flex flex-col md:flex-row gap-4 mb-8">
+        <div class="flex-1 relative">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </span>
+          <input 
+            v-model="searchQuery"
+            type="text" 
+            placeholder="Rechercher un médecin..." 
+            class="w-full pl-12 pr-4 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#1E8E6E]/20 outline-none transition-all font-medium text-slate-700"
+          />
+        </div>
+
+        <div class="w-full md:w-64 relative">
+          <select 
+            v-model="specialityFilter"
+            class="w-full appearance-none px-6 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-[#1E8E6E]/20 outline-none cursor-pointer font-bold text-slate-700"
+          >
+            <option v-for="spec in uniqueSpecialities" :key="spec" :value="spec">{{ spec }}</option>
+          </select>
+          <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </span>
+        </div>
+      </div>
+
+      <div v-if="filteredDoctors.length > 0" class="grid grid-cols-1 gap-2">
         <DoctorCard
-          v-for="doctor in doctors"
+          v-for="doctor in filteredDoctors"
           :key="doctor.id"
           :doctor="doctor"
           @edit="openEditModal"
@@ -113,9 +155,17 @@ function closeDeleteModal() {
       </div>
 
       <div v-else class="mt-12 p-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-center">
-        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">👨‍⚕️</div>
-        <h2 class="text-2xl font-black text-slate-800 tracking-tight">Aucun médecin</h2>
-        <p class="text-slate-400 mt-2 font-medium">Commencez par ajouter un membre à votre équipe.</p>
+        <div v-if="doctors.length === 0">
+           <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">👨‍⚕️</div>
+           <h2 class="text-2xl font-black text-slate-800 tracking-tight">Aucun médecin</h2>
+           <p class="text-slate-400 mt-2 font-medium">Commencez par ajouter un membre à votre équipe.</p>
+        </div>
+        <div v-else>
+           <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔍</div>
+           <h2 class="text-2xl font-black text-slate-800 tracking-tight uppercase italic">Aucun résultat trouvé</h2>
+           <p class="text-slate-400 mt-2 font-medium">Essayez de modifier vos critères de recherche ou le filtre par spécialité.</p>
+           <button @click="searchQuery = ''; specialityFilter = 'Toutes'" class="mt-4 text-[#1E8E6E] font-bold hover:underline">Voir tous les médecins</button>
+        </div>
       </div>
 
       <DoctorForm
