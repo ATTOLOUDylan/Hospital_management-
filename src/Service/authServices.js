@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 const defaultUsers = [
   {
     Name: "Administrateur",
-    email: "admin@example.com",
+    email: ".admin@examplecom",
     password: bcrypt.hashSync("Mm12!!", 10),
     role: "Admin"
   },
