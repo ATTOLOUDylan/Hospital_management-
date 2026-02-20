@@ -3,30 +3,7 @@
 import bcrypt from "bcryptjs";
 
 const defaultUsers = [
-  {
-    Name: "Administrateur",
-    email: ".admin@examplecom",
-    password: bcrypt.hashSync("Mm12!!", 10),
-    role: "Admin"
-  },
-  {
-    Name: "Manoël",
-    email: "manoël@example.com",
-    password: bcrypt.hashSync("Mr13!!", 10),
-    role: "Receptionniste"
-  },
-  {
-    Name: "Descart",
-    email: "descart@example.com",
-    password: bcrypt.hashSync("Mr14!!", 10),
-    role: "Receptionniste"
-  },
-  {
-    Name: "Steven",
-    email: "steven@example.com",
-    password: bcrypt.hashSync("Mr15!!", 10),
-    role: "doctor"
-  }
+
   { id: 1, Name: "Administrateur", email: "admin@example.com", password: bcrypt.hashSync("Mm12!!", 10), role: "Admin" },
   { id: 2, Name: "Manoël", email: "manoël@example.com", password: bcrypt.hashSync("Mr13!!", 10), role: "Receptionniste" },
   { id: 3, Name: "Descart", email: "descart@example.com", password: bcrypt.hashSync("Mr14!!", 10), role: "Receptionniste" },

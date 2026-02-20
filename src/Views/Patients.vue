@@ -1,12 +1,24 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { RouterLink } from "vue-router";
-import Modal from "@/Components/Modal.vue"; // Assure-toi que le chemin est correct
+import Modal from "@/Components/Modal.vue";
+import Notification from "@/Components/Notification.vue"; // Importation du composant
 
 const user = ref(null);
 const patients = ref([]);
 const searchQuery = ref("");
 const statusFilter = ref("");
+
+// ÉTAT POUR LA NOTIFICATION
+const notification = ref({ message: '', type: 'success' });
+
+function triggerNotify(msg, type = 'success') {
+  notification.value.message = msg;
+  notification.value.type = type;
+  setTimeout(() => {
+    notification.value.message = '';
+  }, 3000);
+}
 
 // ÉTATS POUR LE MODAL DE SUPPRESSION
 const showDeleteModal = ref(false);
@@ -47,7 +59,6 @@ const filteredPatients = computed(() => {
   return result;
 });
 
-// LOGIQUE DE SUPPRESSION STYLISÉE
 function confirmDelete(patient) {
     patientToDelete.value = patient;
     showDeleteModal.value = true;
@@ -60,9 +71,9 @@ function closeDeleteModal() {
 
 function executeDelete() {
     if (patientToDelete.value) {
-        // Filtrage de la liste des patients
         patients.value = patients.value.filter(p => p.id !== patientToDelete.value.id);
         localStorage.setItem("patients", JSON.stringify(patients.value));
+        triggerNotify("Dossier patient supprimé", "error"); // Déclenchement notif
     }
     closeDeleteModal();
 }
@@ -71,6 +82,8 @@ function executeDelete() {
 <template>
   <div v-if="user" class="w-full px-4 sm:px-8 lg:px-10 py-10 bg-[#f8fafc] min-h-screen font-sans text-slate-900">
     
+    <Notification :message="notification.message" :type="notification.type" />
+
     <div class="max-w-[1600px] mx-auto">
       
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">

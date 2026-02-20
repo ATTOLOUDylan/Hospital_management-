@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import Notification from "@/Components/Notification.vue"; // 1. IMPORT
 
 // --- ÉTATS RÉACTIFS ---
 const chambres = ref([])
@@ -9,6 +10,17 @@ const editingRoomId = ref(null)
 const filterRoom = ref('')
 const showDeleteModal = ref(false)
 const roomToDelete = ref(null)
+const searchQuery = ref('')
+const statusFilter = ref('Tous')
+const categoryFilter = ref('Toutes')
+
+// --- LOGIQUE NOTIFICATION ---
+const notification = ref({ message: '', type: 'success' });
+const triggerNotify = (msg, type = 'success') => {
+  notification.value.message = msg;
+  notification.value.type = type;
+  setTimeout(() => { notification.value.message = ''; }, 3000);
+};
 
 // Modèle de données pour le formulaire
 const form = ref({
@@ -23,19 +35,14 @@ const form = ref({
 const getPatientsByRoom = (roomNumero) => {
   return patients.value.filter(p => p.roomName === roomNumero)
 }
-
-// --- COMPUTED: Chambres avec leurs patients ---
+const categoryOptions = computed(() => {
+  const types = chambres.value.map(c => c.type)
+  return ['Toutes', ...new Set(types)]
+})
 const chambresWithPatients = computed(() => {
-  let filteredChambres = chambres.value
-  
-  // Appliquer le filtre de chambre
-  if (filterRoom.value) {
-    filteredChambres = filteredChambres.filter(c => c.numero === filterRoom.value)
-  }
-  
-  return filteredChambres.map(chambre => {
+  let result = chambres.value.map(chambre => {
     const roomPatients = getPatientsByRoom(chambre.numero)
-    const isOccupied = roomPatients.length > 0
+    const isOccupied = roomPatients.length >= chambre.capacite
     return {
       ...chambre,
       patients: roomPatients,
@@ -43,25 +50,45 @@ const chambresWithPatients = computed(() => {
       patientCount: roomPatients.length
     }
   })
+
+  if (searchQuery.value) {
+    result = result.filter(c => 
+      c.numero.toLowerCase().includes(searchQuery.value.toLowerCase())
+    )
+  }
+
+  if (statusFilter.value !== 'Tous') {
+    result = result.filter(c => c.status === statusFilter.value)
+  }
+
+  if (categoryFilter.value !== 'Toutes') {
+    result = result.filter(c => c.type === categoryFilter.value)
+  }
+
+  return result
 })
 
-// --- COMPUTED: Liste des chambres pour le filtre ---
 const roomOptions = computed(() => {
   return chambres.value.map(c => c.numero)
 })
 
-// --- INITIALISATION ET STOCKAGE ---
 onMounted(() => {
-  // Charger les patients depuis localStorage
   const savedPatients = JSON.parse(localStorage.getItem('patients') || '[]')
   patients.value = savedPatients
 
-  // Charger les chambres depuis localStorage 'rooms'
   const savedRooms = JSON.parse(localStorage.getItem('rooms') || '[]')
   if (savedRooms.length === 0) {
     const initialData = [
       { id: 1, numero: "A-01", status: 'libre', type: "Standard", capacite: 10, AffectationPatient: 0 },
-      { id: 2, numero: "A-02", status: 'libre', type: "VIP", capacite: 5, AffectationPatient: 0 }
+      { id: 2, numero: "A-02", status: 'libre', type: "Standard", capacite: 5, AffectationPatient: 0 },
+      { id: 3, numero: "A-03", status: 'libre', type: "VIP", capacite: 5, AffectationPatient: 0 },
+      { id: 4, numero: "A-04", status: 'libre', type: "Standard", capacite: 5, AffectationPatient: 0 },
+      { id: 5, numero: "A-05", status: 'libre', type: "Standard", capacite: 10, AffectationPatient: 0 },
+      { id: 6, numero: "B-01", status: 'libre', type: "Standard", capacite: 10, AffectationPatient: 0 },
+      { id: 7, numero: "B-02", status: 'libre', type: "Standard", capacite: 5, AffectationPatient: 0 },
+      { id: 8, numero: "B-03", status: 'libre', type: "VIP", capacite: 5, AffectationPatient: 0 },
+      { id: 9, numero: "B-04", status: 'libre', type: "Standard", capacite: 5, AffectationPatient: 0 },
+      { id: 10, numero: "B-05", status: 'libre', type: "Standard", capacite: 10, AffectationPatient: 0 },
     ]
     chambres.value = initialData
     saveToStorage()
@@ -70,11 +97,23 @@ onMounted(() => {
   }
 })
 
-const saveToStorage = () => {
-  localStorage.setItem('rooms', JSON.stringify(chambres.value))
-}
+const saveToStorage = (data = chambres.value) => {
+  localStorage.setItem('rooms', JSON.stringify(data));
+};
 
-// --- LOGIQUE CRUD (Chambres) ---
+watch(chambresWithPatients, (newVal) => {
+  const dataToSave = newVal.map(ch => ({
+    id: ch.id,
+    numero: ch.numero,
+    status: ch.status, 
+    type: ch.type,
+    capacite: ch.capacite,
+    AffectationPatient: ch.AffectationPatient
+  }));
+  localStorage.setItem('rooms', JSON.stringify(dataToSave));
+}, { deep: true });
+
+// --- LOGIQUE CRUD ---
 
 const openModal = (room = null) => {
   if (room) {
@@ -93,9 +132,11 @@ const saveRoom = () => {
   if (editingRoomId.value) {
     const index = chambres.value.findIndex(r => r.id === editingRoomId.value)
     chambres.value[index] = { ...form.value }
+    triggerNotify("Chambre mise à jour avec succès !"); // NOTIF SUCCÈS
   } else {
     const newRoom = { ...form.value, id: Date.now() }
     chambres.value.push(newRoom)
+    triggerNotify("Nouvelle chambre créée !"); // NOTIF SUCCÈS
   }
   
   saveToStorage()
@@ -105,6 +146,7 @@ const saveRoom = () => {
 const deleteRoom = (id) => {
   chambres.value = chambres.value.filter(r => r.id !== id)
   saveToStorage()
+  triggerNotify("Chambre supprimée", "error"); // NOTIF ERREUR/ALERTE
   showDeleteModal.value = false
   roomToDelete.value = null
 }
@@ -119,7 +161,6 @@ const closeDeleteModal = () => {
   roomToDelete.value = null
 }
 
-// --- UI HELPERS ---
 const getTypeClass = (type) => {
   switch (type) {
     case 'VIP': return 'bg-purple-100 text-purple-700'
@@ -135,9 +176,10 @@ const getPatientName = (patient) => {
 </script>
 
 <template>
-  <div class="w-full p-6 bg-gray-100 min-h-screen">
+<div class="w-full p-6 bg-gray-100 min-h-screen">
     
-    <!-- Header -->
+    <Notification :message="notification.message" :type="notification.type" />
+
     <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Gestion des Chambres</h1>
@@ -152,18 +194,45 @@ const getPatientName = (patient) => {
       </button>
     </div>
 
-    <!-- Filtre -->
-    <div class="mb-6 flex items-center gap-3">
-      <label class="text-sm font-medium text-gray-600">Filtrer:</label>
-      <select v-model="filterRoom" class="px-3 py-2 bg-white border border-gray-300 rounded text-sm">
-        <option value="">Toutes les chambres</option>
-        <option v-for="room in roomOptions" :key="room" :value="room">{{ room }}</option>
-      </select>
-      <button v-if="filterRoom" @click="filterRoom = ''" class="text-sm text-gray-500 hover:text-gray-700">
-        Reset
-      </button>
-    </div>
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+  
+  <div class="relative">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+    </span>
+    <input 
+      v-model="searchQuery"
+      type="text" 
+      placeholder="N° de chambre..." 
+      class="w-full pl-10 pr-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1E8E6E]/20 outline-none"
+    />
+  </div>
 
+  <div class="flex items-center gap-2">
+    <label class="text-sm font-bold text-gray-600">Catégorie:</label>
+    <select v-model="categoryFilter" class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm outline-none cursor-pointer">
+      <option v-for="cat in categoryOptions" :key="cat" :value="cat">{{ cat }}</option>
+    </select>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <label class="text-sm font-bold text-gray-600">État:</label>
+    <select v-model="statusFilter" class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm outline-none cursor-pointer">
+      <option value="Tous">Tous</option>
+      <option value="libre">Libre</option>
+      <option value="occupée">Occupée</option>
+    </select>
+    
+    <button 
+      v-if="searchQuery || statusFilter !== 'Tous' || categoryFilter !== 'Toutes'" 
+      @click="searchQuery = ''; statusFilter = 'Tous'; categoryFilter = 'Toutes'" 
+      class="ml-2 p-2 text-gray-400 hover:text-red-500 transition-colors"
+      title="Réinitialiser"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+  </div>
+</div>
     <!-- Liste des chambres -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       <div 

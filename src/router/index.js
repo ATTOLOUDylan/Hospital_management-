@@ -1,15 +1,16 @@
-import { createRouter, createWebHistory } from "vue-router";
-import Login from "@/Views/Login.vue";
-import Appointments from "@/Views/Appointments.vue";
-import Doctors from "@/Views/Doctors.vue";
-import Home from "@/Views/Home.vue";
-import Patients from "@/Views/Patients.vue";
-import Rooms from "@/Views/Rooms.vue";
-import Users from "@/Views/Users.vue";
-import PatientsDetail from "@/Components/PatientsDetail.vue";
-import PatientsForm from "@/Components/PatientsForm.vue";
-import { authService } from "@/Service/authServices";
-
+import { createRouter, createWebHistory } from 'vue-router'
+import Login from '@/Views/Login.vue'
+import Appointments from '@/Views/Appointments.vue'
+import Doctors from '@/Views/Doctors.vue'
+import Home from '@/Views/Home.vue'
+import Patients from '@/Views/Patients.vue'
+import Rooms from '@/Views/Rooms.vue'
+import Users from '@/Views/Users.vue'
+import PatientsDetail from '@/Components/PatientsDetail.vue'
+import PatientsForm from '@/Components/PatientsForm.vue'
+import Plaintes from '@/Views/Plaintes.vue'
+import { authService } from '@/Service/authServices'
+import NotFound from '@/Views/NotFound.vue'
 const routes = [
   { path: "/", name: "login", component: Login, meta: { requiresAuth: false, hideNav : true } },
   {
@@ -58,9 +59,20 @@ const routes = [
     path: "/users",
     name: "Users",
     component: Users,
-    meta: { requiresAuth: true, role: "Admin" },
-  }, // Protection Admin
-];
+
+  },
+    {
+    path: "/plainte",
+    name: "Plainte",
+    component: Plaintes,
+
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFound
+  }
+ ]
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -83,7 +95,7 @@ router.beforeEach((to, from, next) => {
         alert("Accès refusé : Réservé aux administrateurs");
         next({ name: "Home" });
       } else {
-        next(); // Tout est OK
+        next();
       }
     }
   }

@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from "vue";
 import Modal from "@/Components/Modal.vue";
 import AppointmentsList from "@/Components/AppointmentsList.vue";
 import AppointmentForm from "@/Components/AppointmentForm.vue";
+import Notification from "@/Components/Notification.vue"; // Importation du composant notification
 
 const appointments = ref([]);
 const patients = ref([]);
@@ -10,6 +11,17 @@ const doctors = ref([]);
 const showModal = ref(false);
 const editingAppointment = ref(null);
 const currentUser = ref(null);
+
+// ÉTAT POUR LA NOTIFICATION
+const notification = ref({ message: '', type: 'success' });
+
+function triggerNotify(msg, type = 'success') {
+  notification.value.message = msg;
+  notification.value.type = type;
+  setTimeout(() => {
+    notification.value.message = '';
+  }, 3000);
+}
 
 onMounted(() => {
     appointments.value = JSON.parse(localStorage.getItem("appointments") || "[]");
@@ -24,14 +36,12 @@ onMounted(() => {
 const filteredAppointments = computed(() => {
     if (!currentUser.value) return [];
   
-       // Si médecin : seulement ses rendez-vous
     if (currentUser.value.role === "doctor") {
         return appointments.value.filter(a => 
             a.doctorName?.toLowerCase() === currentUser.value.Name.toLowerCase()
         );
     }
 
-    // Admin & Receptionniste : tout voir
     return appointments.value;
 });
 
@@ -72,50 +82,46 @@ function saveAppointment(appointment) {
         a.time === appointment.time &&
         a.id !== appointment.id
     );
+
     if (conflict) {
-        alert("Ce créneau est déjà réservé !");
+        triggerNotify("Ce créneau est déjà réservé !", "error"); // Notification d'erreur
         return;
     }
 
     if (appointment.id) {
         const index = appointments.value.findIndex(a => a.id === appointment.id);
-        if (index !== -1) appointments.value[index] = { ...appointment };
+        if (index !== -1) {
+            appointments.value[index] = { ...appointment };
+            triggerNotify("Rendez-vous modifié avec succès !");
+        }
     } else {
         appointment.id = Date.now();
         appointments.value.push({ ...appointment });
+        triggerNotify("Rendez-vous programmé !");
     }
 
     localStorage.setItem("appointments", JSON.stringify(appointments.value));
     closeModal();
 }
 
-function deleteAppointment(id) {
-    if (!confirm("Voulez-vous supprimer ce rendez-vous ?")) return;
-    appointments.value = appointments.value.filter(a => a.id !== id);
-    localStorage.setItem("appointments", JSON.stringify(appointments.value));
-}
-
-// ... tes autres refs existantes
 const showDeleteModal = ref(false);
 const idToDelete = ref(null);
 
-// Déclenche l'ouverture du modal de confirmation
 function confirmDelete(id) {
     idToDelete.value = id;
     showDeleteModal.value = true;
 }
 
-// Ferme le modal sans rien faire
 function closeDeleteModal() {
     showDeleteModal.value = false;
     idToDelete.value = null;
 }
 
-// Exécute la suppression réelle
 function executeDelete() {
     if (idToDelete.value) {
         appointments.value = appointments.value.filter(a => a.id !== idToDelete.value);
         localStorage.setItem("appointments", JSON.stringify(appointments.value));
+        triggerNotify("Rendez-vous annulé", "error"); // Notification de suppression
     }
     closeDeleteModal();
 }
@@ -123,6 +129,9 @@ function executeDelete() {
 
 <template>
   <div class="w-full px-4 sm:px-8 lg:px-10 py-10 bg-[#f8fafc] min-h-screen font-sans text-slate-900">
+    
+    <Notification :message="notification.message" :type="notification.type" />
+
     <div class="max-w-[1600px] mx-auto">
       
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -188,7 +197,6 @@ function executeDelete() {
 </template>
 
 <style scoped>
-/* Transition simple pour le modal */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }
