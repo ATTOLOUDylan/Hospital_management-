@@ -201,6 +201,7 @@ function savePatient() {
             <select v-model="patient.status" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none">
               <option value="stable">Stable</option>
               <option value="critique">Critique</option>
+              <option value="hospitalisé">Hospitalisé</option>
             </select>
           </div>
           <div class="flex items-center gap-4 mt-8">

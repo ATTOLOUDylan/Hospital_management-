@@ -27,12 +27,17 @@ const defaultUsers = [
     password: bcrypt.hashSync("Mr15!!", 10),
     role: "doctor"
   }
+  { id: 1, Name: "Administrateur", email: "admin@example.com", password: bcrypt.hashSync("Mm12!!", 10), role: "Admin" },
+  { id: 2, Name: "Manoël", email: "manoël@example.com", password: bcrypt.hashSync("Mr13!!", 10), role: "Receptionniste" },
+  { id: 3, Name: "Descart", email: "descart@example.com", password: bcrypt.hashSync("Mr14!!", 10), role: "Receptionniste" },
+  { id: 4, Name: "Steven", email: "steven@example.com", password: bcrypt.hashSync("Mr15!!", 10), role: "doctor" }
 ];
 
 export const authService = {
   getUsers() {
     const stored = localStorage.getItem("db_users");
     if (!stored) {
+      // Si rien en mémoire, on installe les défauts
       localStorage.setItem("db_users", JSON.stringify(defaultUsers));
       return defaultUsers;
     }
