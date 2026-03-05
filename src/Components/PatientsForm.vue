@@ -90,6 +90,11 @@ function savePatient() {
   localStorage.setItem("patients", JSON.stringify(savedPatients));
   router.push({ name: "Patients" });
 }
+
+
+const availableRooms = computed(() => {
+  return rooms.filter(room => room.status === 'Libre' || room.status === 'libre');
+});
 </script>
 
 <template>
@@ -192,8 +197,18 @@ function savePatient() {
           <div class="space-y-2">
             <label class="text-xs font-black uppercase text-gray-400">Chambre</label>
             <select v-model="patient.roomId" class="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 outline-none">
-              <option :value="null">Sans chambre</option>
-              <option v-for="room in rooms" :key="room.id" :value="room.id">N° {{ room.numero }}</option>
+              <option :value="null">Sans chambre (Sortie/Externe)</option>
+              
+              <option v-for="room in availableRooms" :key="room.id" :value="room.id">
+                N° {{ room.numero }} (Libre)
+              </option>
+
+              <option 
+                v-if="isEditing && patient.roomId && !availableRooms.find(r => r.id === patient.roomId)" 
+                :value="patient.roomId"
+              >
+                N° {{ patient.roomName }} (Actuelle)
+              </option>
             </select>
           </div>
           <div class="space-y-2">

@@ -94,7 +94,7 @@ function executeDelete() {
           <p class="text-slate-500 font-medium mt-1">Gérez et suivez les dossiers médicaux actifs.</p>
         </div>
         
-        <RouterLink :to="{ name: 'PatientsForm' }">
+        <RouterLink v-if="user.role != 'doctor'" :to="{ name: 'PatientsForm' }">
           <button class="flex items-center gap-2 bg-[#1E8E6E] text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-[#1E8E6E]/20 hover:bg-[#166f56] transition-all transform hover:-translate-y-1">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
             Nouveau Patient

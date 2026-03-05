@@ -12,67 +12,35 @@ import Plaintes from '@/Views/Plaintes.vue'
 import { authService } from '@/Service/authServices'
 import NotFound from '@/Views/NotFound.vue'
 const routes = [
-  { path: "/", name: "login", component: Login, meta: { requiresAuth: false, hideNav : true } },
-  {
-    path: "/home",
-    name: "Home",
-    component: Home,
-    meta: { requiresAuth: true },
+  { path: "/", name: "login", component: Login, meta: { requiresAuth: false, hideNav: true } },
+  { path: "/home", name: "Home", component: Home, meta: { requiresAuth: true } },
+  { path: "/appointments", name: "Appointments", component: Appointments, meta: { requiresAuth: true } },
+  
+  // Sécurisé : Seul l'Admin peut voir les médecins
+  { 
+    path: "/doctors", 
+    name: "Doctors", 
+    component: Doctors, 
+    meta: { requiresAuth: true, role: 'Admin' } 
   },
-  {
-    path: "/appointments",
-    name: "Appointments",
-    component: Appointments,
-    meta: { requiresAuth: true },
+  
+  { path: "/patients", name: "Patients", component: Patients, meta: { requiresAuth: true } },
+  { path: "/patients/:id", name: "Patients-details", component: PatientsDetail, meta: { requiresAuth: true } },
+  { path: "/patients-form/:id?", name: "PatientsForm", component: PatientsForm, meta: { requiresAuth: true } },
+  { path: "/rooms", name: "Rooms", component: Rooms, meta: { requiresAuth: true } },
+  
+  // Sécurisé : Seul l'Admin peut gérer les utilisateurs
+  { 
+    path: "/users", 
+    name: "Users", 
+    component: Users, 
+    meta: { requiresAuth: true, role: 'Admin' } 
   },
-  {
-    path: "/doctors",
-    name: "Doctors",
-    component: Doctors,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/patients",
-    name: "Patients",
-    component: Patients,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/patients/:id",
-    name: "Patients-details",
-    component: PatientsDetail,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/patients-form/:id?",
-    name: "PatientsForm",
-    component: PatientsForm,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/rooms",
-    name: "Rooms",
-    component: Rooms,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: "/users",
-    name: "Users",
-    component: Users,
+  
+  { path: "/plainte", name: "Plainte", component: Plaintes, meta: { requiresAuth: true } },
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound }
+]
 
-  },
-    {
-    path: "/plainte",
-    name: "Plainte",
-    component: Plaintes,
-
-  },
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'not-found',
-    component: NotFound
-  }
- ]
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
@@ -80,33 +48,26 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const loggedIn = authService.isAuthenticated();
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
-  // 1. Vérifie si la route demande une authentification
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!loggedIn) {
-      // Pas connecté -> Redirection Login
-      next({ name: "login" });
-    } else {
-      // Vérification spécifique pour la page Users (Admin uniquement)
-      const currentUser = JSON.parse(
-        localStorage.getItem("currentUser") || "{}",
-      );
-      if (to.meta.role === "Admin" && currentUser.role !== "Admin") {
-        alert("Accès refusé : Réservé aux administrateurs");
-        next({ name: "Home" });
-      } else {
-        next();
-      }
-    }
+  // 1. Redirection si non connecté sur une page protégée
+  if (to.meta.requiresAuth && !loggedIn) {
+    return next({ name: "login" });
   }
-  // 2. Si l'utilisateur est déjà connecté et tente d'aller sur le Login
-  else if (to.name === "login" && loggedIn) {
-    next({ name: "Home" });
+
+  // 2. Redirection si connecté et tente d'aller sur Login
+  if (to.name === "login" && loggedIn) {
+    return next({ name: "Home" });
   }
-  // 3. Route publique ou accès autorisé
-  else {
-    next();
+
+  // 3. Vérification des rôles (Admin uniquement pour Doctors et Users)
+  if (to.meta.role === "Admin" && currentUser.role !== "Admin") {
+    console.warn("Accès refusé : Droits insuffisants");
+    return next({ name: "Home" }); // Redirige vers l'accueil si pas Admin
   }
+
+  // 4. Sinon, on laisse passer
+  next();
 });
 
 export default router;
